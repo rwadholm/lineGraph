@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Graph HTML</title>
+<meta name="description" content="Peer-to-peer communication">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style type="text/css">
+html {
+  padding: 0;
+  margin: 0;
+  background: #efefef;
+  font-family: 'Helvetica','Open Sans',sans-sans-serif;
+}
+body {
+  max-width: 1000px;
+  background: #fff;
+  padding: 2px 14px;
+  margin: 20px auto;
+  border-radius: 8px;
+  box-shadow: 0 0 30px #ccc;
+  min-height: 80vh;
+  position: relative;
+}
+span {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  background: #069;
+  border-radius: 6px;
+  position: absolute;
+}
+.a {
+  top: 400px; /* x value */
+  left: 80px; /* y value */
+}
+.b {
+  top: 23px; /* x value */
+  left: 443px; /* y value */
+}
+.c {
+  top: 355px;
+  left: 900px;
+}
+.d {
+  top: 346px; /* x value */
+  left: 262px; /* y value */
+}
+.e {
+  top: 453px; /* x value */
+  left: 2px; /* y value */
+}
+.f {
+  top: 400px; /* x value */
+  left: 80px; /* y value */
+}
+.line {
+  height: 2px;
+  transform-origin: top left;
+  background: #000;
+}
+</style>
+<script type="text/javascript">
+
+/* jQuery-like Functions, © 2019 Bob Wadholm, MIT License
+For ideas about plain vanilla JS to do jQuery kinds of things,
+see https://gist.github.com/joyrexus/7307312
+*/
+const $ = (function(selector){
+
+  let el = [selector]
+  if (typeof selector === 'string'){
+    /** jQuery-like Selectors
+    * :scope forces JS to listen to all selectors after it */
+    el = document.querySelectorAll(':scope '+ selector)
+  }
+
+  /** jQuery-like append & prepend functions
+  * argument accepts html or text as a string */
+  append = el.append
+  el.append = function(html){
+    el.forEach(function(item){
+      appender(item, html)
+    })
+
+    function appender(el, html){
+      const newHTML = document.createElement('div')
+      newHTML.innerHTML = html
+      el.appendChild(newHTML)
+      const parent = newHTML.parentNode
+      while (newHTML.firstChild) parent.insertBefore(newHTML.firstChild, newHTML)
+      parent.removeChild(newHTML)
+    }
+  }
+
+  prepend = el.prepend
+  el.prepend = (html) => {
+    el.forEach(item => {
+      prepender(item, html)
+    })
+
+    function prepender(el, html) {
+      const newHTML = document.createElement('div')
+      newHTML.innerHTML = html
+      el.insertBefore(newHTML, el.firstChild);
+    }
+  }
+
+  /** jQuery-like on event function for dynamically added elements*/
+  el.on = function(ev, element, callback){
+    // If no second argument, provide one
+    if(typeof element === 'function'){
+      el = document.querySelectorAll('body')
+      callback = element
+      element = selector
+    }
+
+    el.forEach(function(el){
+        addEvent(ev, element, callback, el)
+    })
+
+    function addEvent(ev,element,callback,el){
+      // Add the event listeners to the designated static parent(s)
+      el.addEventListener(ev, function(currentEv){
+        for (i = 0; i < (currentEv.path.length - 3); i++) {
+        // If matching element(s) (even dynamically added ones or parent elements of the one clicked)
+          if(currentEv.path[i].matches(element)){
+            // Perform the callback and pass the current element as the default
+            callback.call(currentEv.srcElement,currentEv)
+            i = currentEv.path.length // escape from for loop
+          }
+        }
+      })
+    }
+  };
+
+  /** jQuery-like class functions */
+  el.addClass = function(className){
+    el.forEach((item) => {
+      item.classList.add(className)
+    })
+  }
+
+  el.removeClass = function(className){
+    el.forEach((item) => {
+      item.classList.remove(className)
+    })
+  }
+
+  el.toggleClass = function(className){
+    el.forEach((item) => {
+      if(item.classList.contains(className)){
+        item.classList.remove(className)
+      } else {
+        item.classList.add(className)
+      }
+    })
+  }
+
+  //remove = el.remove
+  el.remove = function(){
+    el.forEach((item) => {
+      const parent = item.parentNode
+      parent.removeChild(item)
+    })
+  }
+
+  return el;
+})
+
+document.addEventListener("DOMContentLoaded", function(){ // Page is loaded
+
+  // Hand this function selectors, such as '.a','.b', and it returns lines between elements
+  function tween(a,b){
+    a = document.querySelector(a)
+    b = document.querySelector(b)
+    const difx = Math.abs(a.offsetLeft - b.offsetLeft) // get dif between
+    const dify = Math.abs(a.offsetTop - b.offsetTop) // get dif between
+    const lineW = Math.sqrt((Math.pow(difx, 2) + Math.pow(dify, 2))) // distance between two points
+    let lineAngle = Math.atan2(dify, difx) * 180 / Math.PI // angle between two points
+    let negative = ''
+    let scale = ''
+    if(a.offsetTop >= b.offsetTop){
+      negative = '-'
+    }
+    if(a.offsetLeft >= b.offsetLeft){
+       scale = 'scale(-1, 1)'
+       if(a.offsetTop >= b.offsetTop){
+         negative = ''
+       } else {
+         negative = '-'
+       }
+    }
+    const left = (a.offsetLeft + (a.getBoundingClientRect().width / 2))
+    const top = (a.offsetTop + (a.getBoundingClientRect().height / 2) - 1)
+    return `<span class="line" style="left:${left}px;top:${top}px; transform:rotate(${negative}${lineAngle}deg) ${scale}; width:${lineW}px;"></span>`
+  }
+
+  $('body').append(tween('.a','.b') + tween('.b','.c') + tween('.c','.d') + tween('.d','.e') + tween('.e','.f') + tween('.f','.a'))
+})
+</script>
+</head>
+<body>
+
+  <span class="a"></span>
+  <span class="b"></span>
+  <span class="c"></span>
+  <span class="d"></span>
+  <span class="e"></span>
+  <span class="f"></span>
+
+</body>
+</html>
